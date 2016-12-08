@@ -12,22 +12,19 @@
     df_activity$date <- as.Date(df_activity$date)
 ```
 
-* Here are the first few lines of the activity data set that we are about to process.
+* Here's the activity data structure.
 
 
 ```r
     # summary(df_activity)
-    head(df_activity)
+    str(df_activity)
 ```
 
 ```
-##   steps       date interval
-## 1    NA 2012-10-01        0
-## 2    NA 2012-10-01        5
-## 3    NA 2012-10-01       10
-## 4    NA 2012-10-01       15
-## 5    NA 2012-10-01       20
-## 6    NA 2012-10-01       25
+## 'data.frame':	17568 obs. of  3 variables:
+##  $ steps   : int  NA NA NA NA NA NA NA NA NA NA ...
+##  $ date    : Date, format: "2012-10-01" "2012-10-01" ...
+##  $ interval: int  0 5 10 15 20 25 30 35 40 45 ...
 ```
 
 * * * * *
@@ -48,10 +45,13 @@ Below is the
     df <- df_activity %>% 
         group_by(date) %>% 
         summarize(all_steps = sum(steps, na.rm=TRUE))
-    # cannot use ggplot due to is.integer(group) not TRUE error so use hist()
-    hist(df$all_steps, col="lightgray", 
-         xlab = "Steps per day", ylab = "How Often Steps Occur",
-         main = "Histogram of total number of steps taken per day")
+    ggplot(df, aes(x=all_steps)) + geom_histogram() +
+      labs(x="Steps per day", y="How Often Steps Occur",
+           title="Histogram of total number of steps taken per day")
+```
+
+```
+## `stat_bin()` using `bins = 30`. Pick better value with `binwidth`.
 ```
 
 ![](PA1_template_files/figure-html/unnamed-chunk-3-1.png)<!-- -->
@@ -82,14 +82,16 @@ Below is the
     df <- df_activity %>%
         group_by(interval) %>%
         summarise(mean_steps = mean(steps, na.rm=TRUE))
-    # cannot use ggplot due to is.integer(group) not TRUE error so use plot()
-    plot(df, type="l", ylab="Average number of steps", xlab = "5-minute Intervals",
-         main="Average number of steps per interval", col="darkgreen")
+    p <- ggplot(df, aes(x=interval, y=mean_steps)) + geom_line() +
+           labs(x="5-minute Intervals", y="Average number of steps",
+                title="HAverage number of steps per interval")
+    intercept <- df %>% slice(which.max(mean_steps)) %>% select(interval)
+    p + geom_vline(xintercept = intercept$interval[1], color="red")
 ```
 
 ![](PA1_template_files/figure-html/unnamed-chunk-5-1.png)<!-- -->
 
-2. Below is the **interval, on average across all days** in the dataset, that contains the maximum number of steps.  We find this value by finding the maximum steps value of the interval data.
+2. Below is the **interval, on average across all days** in the dataset, that contains the maximum number of steps.  We find this value by finding the maximum steps value of the interval data.  The above vertical red line is determined by the same method.
 
 
 ```r
@@ -167,17 +169,20 @@ Below is the
 ## 6     2 2012-10-01       25
 ```
 
-3. Now we are recreating the histogram as we did earlier after loading data.  Below is the histogram of the total number of steps taken each day.
+3. Now we are recreating the histogram as we did earlier after loading data.  Below is the histogram of the total number of steps taken each day with imputed data.
 
 
 ```r
     df <- df_imputed %>% 
         group_by(date) %>% 
         summarize(all_steps = sum(steps, na.rm=TRUE))
-    # cannot use ggplot due to is.integer(group) not TRUE error so use hist()
-    hist(df$all_steps, col="lightgray", 
-         xlab = "Steps per day", ylab = "How Often Steps Occur",
-         main = "Histogram of total number of steps taken per day")
+    ggplot(df, aes(x=all_steps)) + geom_histogram() +
+      labs(x="Steps per day", y="How Often Steps Occur",
+           title="Histogram of total number of steps taken per day")
+```
+
+```
+## `stat_bin()` using `bins = 30`. Pick better value with `binwidth`.
 ```
 
 ![](PA1_template_files/figure-html/unnamed-chunk-10-1.png)<!-- -->
@@ -237,12 +242,11 @@ dfi
 
 
 ```r
-    # This ggplot works and the is.integer(group) not TRUE error would not pop up
-    # if xlab, ylab, and other buildups are not used
     ggplot(dfi, aes(interval, mean_steps)) +
-        ggtitle("Time Series Plot of Mean Steps by Interval of Imputed Data") +
         facet_grid(. ~ wd_or_we) +
-        geom_line(size = 1)
+        geom_line(size = 1) +
+      labs(x="Steps per day", y="How Often Steps Occur",
+           title="Time Series Plot of Mean Steps by Interval of Imputed Data")
 ```
 
 ![](PA1_template_files/figure-html/unnamed-chunk-13-1.png)<!-- -->
